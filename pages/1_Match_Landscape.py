@@ -253,14 +253,14 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
     participants_data = []
     n_participants = len(participant_df)
 
-    # Generate positions in a circular pattern spread across the canvas center
+    # Generate positions with wider distribution
     np.random.seed(42)
 
     for idx, (_, row) in enumerate(participant_df.iterrows()):
-        # Circular distribution - spread evenly in a large circle
-        angle = (idx / n_participants) * 2 * np.pi + np.random.uniform(-0.3, 0.3)
-        # Varying radius for natural look, spread between 80 and 200 pixels from center
-        radius = 80 + np.random.uniform(0, 120)
+        # Distribute stars in a smaller circular pattern
+        angle = (idx / n_participants) * 2 * np.pi + np.random.uniform(-0.5, 0.5)
+        # Smaller radius: spread between 60 and 160 pixels from center
+        radius = 60 + np.random.uniform(0, 100)
 
         # Center the distribution in the canvas (assuming 900x500 canvas)
         x = 450 + radius * np.cos(angle)
@@ -448,11 +448,14 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
             const baseWidth = 900;
             const baseHeight = 500;
 
+            // Add floating animation parameters for each participant
             participants.forEach((p, idx) => {{
                 p.phase = Math.random() * Math.PI * 2;
                 p.phaseY = Math.random() * Math.PI * 2;
                 p.speedX = 0.008 + Math.random() * 0.004;
                 p.speedY = 0.006 + Math.random() * 0.004;
+                // Add individual movement patterns
+                p.moveRadius = 10 + Math.random() * 15; // Movement radius between 10-25 pixels
             }});
 
             // Slow floating animation
@@ -470,6 +473,11 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                 participants.forEach(p => {{
                     p.baseX = p.x * scaleX;
                     p.baseY = p.y * scaleY;
+                    // Initialize current positions
+                    if (p.currentX === undefined) {{
+                        p.currentX = p.baseX;
+                        p.currentY = p.baseY;
+                    }}
                 }});
             }}
 
@@ -480,31 +488,41 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                     stars.push({{
                         x: Math.random() * canvas.width,
                         y: Math.random() * canvas.height,
-                        size: Math.random() * 1.0 + 0.2,
+                        size: Math.random() * 1.5 + 0.5,
                         twinkle: Math.random() * Math.PI * 2,
-                        speed: Math.random() * 0.01 + 0.003
+                        speed: Math.random() * 0.02 + 0.01
                     }});
                 }}
             }}
 
             function drawBackgroundStars() {{
                 stars.forEach(star => {{
-                    const alpha = 0.15 + Math.sin(star.twinkle + animationFrame * star.speed) * 0.1;
+                    const alpha = 0.3 + Math.sin(star.twinkle + animationFrame * star.speed) * 0.3;
                     ctx.beginPath();
                     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(180, 180, 180, ' + alpha + ')';
+                    ctx.fillStyle = 'rgba(0, 0, 0, ' + alpha + ')';
                     ctx.fill();
                 }});
             }}
 
             function drawNebulaClouds() {{
+                // Draw subtle nebula effect
                 const gradient1 = ctx.createRadialGradient(
-                    canvas.width * 0.5, canvas.height * 0.5, 0,
-                    canvas.width * 0.5, canvas.height * 0.5, 300
+                    canvas.width * 0.3, canvas.height * 0.4, 0,
+                    canvas.width * 0.3, canvas.height * 0.4, 300
                 );
-                gradient1.addColorStop(0, 'rgba(95, 137, 209, 0.02)');
+                gradient1.addColorStop(0, 'rgba(95, 137, 209, 0.05)');
                 gradient1.addColorStop(1, 'rgba(95, 137, 209, 0)');
                 ctx.fillStyle = gradient1;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                const gradient2 = ctx.createRadialGradient(
+                    canvas.width * 0.7, canvas.height * 0.6, 0,
+                    canvas.width * 0.7, canvas.height * 0.6, 250
+                );
+                gradient2.addColorStop(0, 'rgba(242, 218, 218, 0.05)');
+                gradient2.addColorStop(1, 'rgba(242, 218, 218, 0)');
+                ctx.fillStyle = gradient2;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }}
 
@@ -536,13 +554,14 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                 const dims = p.dims;
                 const n = dims.length;
                 const angleStep = (Math.PI * 2) / n;
+                // Use animated positions
                 const px = p.currentX || p.baseX || p.x;
                 const py = p.currentY || p.baseY || p.y;
 
                 ctx.save();
                 ctx.globalAlpha = opacity;
 
-                // Draw radar polygon (original shape)
+                // Draw radar polygon
                 ctx.beginPath();
                 for (let i = 0; i < n; i++) {{
                     const angle = i * angleStep - Math.PI / 2;
@@ -566,12 +585,13 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                 const px = p.currentX || p.baseX || p.x;
                 const py = p.currentY || p.baseY || p.y;
 
-                // Draw match connections (dark red, solid)
-                ctx.strokeStyle = '#b22222';
+                // Draw mutual matches (black)
+                ctx.strokeStyle = '#000000';
                 ctx.lineWidth = 2;
                 ctx.globalAlpha = 0.8;
-                p.matches.forEach(matchUid => {{
-                    const target = positionMap[matchUid];
+                ctx.setLineDash([]);
+                p.matches.forEach(uid => {{
+                    const target = positionMap[uid];
                     if (target) {{
                         const tx = target.currentX || target.baseX || target.x;
                         const ty = target.currentY || target.baseY || target.y;
@@ -582,10 +602,10 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                     }}
                 }});
 
-                // Draw "You said Yes" connections (medium pink, dashed)
+                // Draw "You said Yes" connections (red)
                 ctx.strokeStyle = '#e63b55';
                 ctx.lineWidth = 1.5;
-                ctx.globalAlpha = 0.6;
+                ctx.globalAlpha = 0.7;
                 ctx.setLineDash([5, 5]);
                 p.said_yes.forEach(uid => {{
                     if (!p.matches.includes(uid)) {{
@@ -601,10 +621,10 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                     }}
                 }});
 
-                // Draw "They said Yes" connections (gray blue, dotted)
+                // Draw "They said Yes" connections (blue)
                 ctx.strokeStyle = '#5f89d1';
                 ctx.lineWidth = 1.5;
-                ctx.globalAlpha = 0.6;
+                ctx.globalAlpha = 0.7;
                 ctx.setLineDash([2, 4]);
                 p.received_yes.forEach(uid => {{
                     if (!p.matches.includes(uid) && !p.said_yes.includes(uid)) {{
@@ -619,32 +639,39 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                         }}
                     }}
                 }});
-
+                ctx.globalAlpha = 1.0;
                 ctx.setLineDash([]);
-                ctx.globalAlpha = 1;
             }}
 
             function updatePositions() {{
+                time += 0.02; // Slow down the animation
                 positionMap = {{}};
-                time += 0.016; // ~60fps timing
+
                 participants.forEach(p => {{
-                    // Each star has its own movement pattern
-                    const offsetX = Math.sin(time * p.speedX + p.phase) * floatRange;
-                    const offsetY = Math.cos(time * p.speedY + p.phaseY) * floatRange;
-                    p.currentX = p.baseX + offsetX;
-                    p.currentY = p.baseY + offsetY;
+                    // Store base positions if not already stored
+                    if (p.baseX === undefined || p.baseY === undefined) {{
+                        p.baseX = p.x;
+                        p.baseY = p.y;
+                    }}
+
+                    // Calculate new floating positions using sine/cosine for natural movement
+                    p.currentX = p.baseX + Math.sin(time * p.speedX + p.phase) * p.moveRadius;
+                    p.currentY = p.baseY + Math.cos(time * p.speedY + p.phaseY) * p.moveRadius;
+
                     positionMap[p.uid] = p;
                 }});
             }}
 
             function draw() {{
+                // Clear canvas with white background
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+                // Draw subtle background effects
                 drawNebulaClouds();
                 drawBackgroundStars();
 
-                // Draw connection lines first
+                // Draw connection lines first (so they appear behind nodes)
                 if (selectedParticipant) {{
                     drawConnections(selectedParticipant);
                 }}
@@ -653,13 +680,6 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                 participants.forEach(p => {{
                     drawRadarGlyph(p);
                 }});
-            }}
-
-            function animate() {{
-                animationFrame++;
-                updatePositions();
-                draw();
-                requestAnimationFrame(animate);
             }}
 
             function findParticipantAt(x, y) {{
@@ -740,9 +760,19 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                 tooltip.style.opacity = 0;
             }});
 
-            // Initialize
+            // Initial setup
             resizeCanvas();
             generateStars();
+
+            // Animation loop
+            function animate() {{
+                animationFrame++;
+                updatePositions();
+                draw();
+                requestAnimationFrame(animate);
+            }}
+
+            // Start animation
             animate();
 
             window.addEventListener('resize', () => {{
@@ -930,10 +960,10 @@ with col_breakdown:
             <span style="color: {TEXT_COLOR}; font-size: 11px;">{you_yes_they_no/total_raw*100:.1f}%</span>
         </div>
         <div style="margin-bottom: 15px;">
-            <span style="color: {LIGHT_GRAY_PURPLE}; font-size: 24px; font-weight: bold;">{you_no_they_yes:,}</span>
+            <span style="color: {MALE_COLOR}; font-size: 24px; font-weight: bold;">{you_no_they_yes:,}</span>
             <span style="color: {TEXT_COLOR};"> They Yes, You No</span>
             <div style="background: {GRID_COLOR}; border-radius: 4px; height: 8px; margin-top: 5px;">
-                <div style="background: {LIGHT_GRAY_PURPLE}; width: {you_no_they_yes/total_raw*100:.1f}%; height: 100%; border-radius: 4px;"></div>
+                <div style="background: {MALE_COLOR}; width: {you_no_they_yes/total_raw*100:.1f}%; height: 100%; border-radius: 4px;"></div>
             </div>
             <span style="color: {TEXT_COLOR}; font-size: 11px;">{you_no_they_yes/total_raw*100:.1f}%</span>
         </div>
