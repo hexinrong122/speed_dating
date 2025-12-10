@@ -255,12 +255,12 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
 
     # Generate positions with wider distribution
     np.random.seed(42)
-
+    
     for idx, (_, row) in enumerate(participant_df.iterrows()):
-        # Distribute stars in a smaller circular pattern
+        # Distribute stars in a wider circular pattern
         angle = (idx / n_participants) * 2 * np.pi + np.random.uniform(-0.5, 0.5)
-        # Smaller radius: spread between 60 and 160 pixels from center
-        radius = 60 + np.random.uniform(0, 100)
+        # Varying radius for natural look, spread between 100 and 300 pixels from center
+        radius = 100 + np.random.uniform(0, 200)
 
         # Center the distribution in the canvas (assuming 900x500 canvas)
         x = 450 + radius * np.cos(angle)
@@ -403,7 +403,7 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
             <div class="hint" id="hint">✨ Click any star to explore connections</div>
             <div class="info-panel" id="infoPanel" style="display: none;">
                 <h3 id="selectedName">No Selection</h3>
-                <div id="profileRadar"></div>
+                <div id="profileChars" style="margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 5px;"></div>
                 <div class="stat">
                     <span class="dot" style="background: #000000;"></span>
                     <span>Mutual Matches: <strong id="matchCount">0</strong></span>
@@ -452,15 +452,14 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
             participants.forEach((p, idx) => {{
                 p.phase = Math.random() * Math.PI * 2;
                 p.phaseY = Math.random() * Math.PI * 2;
-                p.speedX = 0.008 + Math.random() * 0.004;
-                p.speedY = 0.006 + Math.random() * 0.004;
+                p.speedX = 0.5 + Math.random() * 0.3;  // Faster speed
+                p.speedY = 0.4 + Math.random() * 0.3;  // Faster speed
                 // Add individual movement patterns
-                p.moveRadius = 10 + Math.random() * 15; // Movement radius between 10-25 pixels
+                p.moveRadius = 8 + Math.random() * 12; // Movement radius between 8-20 pixels
             }});
 
-            // Slow floating animation
+            // Floating animation
             let time = 0;
-            const floatRange = 5; // Subtle movement range in pixels
 
             function resizeCanvas() {{
                 canvas.width = container.clientWidth;
@@ -478,6 +477,45 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                         p.currentX = p.baseX;
                         p.currentY = p.baseY;
                     }}
+                }});
+            }}
+
+            function updatePositions() {{
+                time += 0.03; // Animation speed
+                positionMap = {{}};
+
+                participants.forEach(p => {{
+                    // Store base positions if not already stored
+                    if (p.baseX === undefined || p.baseY === undefined) {{
+                        p.baseX = p.x;
+                        p.baseY = p.y;
+                    }}
+
+                    // Calculate floating positions using sine/cosine for smooth natural movement
+                    p.currentX = p.baseX + Math.sin(time * p.speedX + p.phase) * p.moveRadius;
+                    p.currentY = p.baseY + Math.cos(time * p.speedY + p.phaseY) * p.moveRadius;
+
+                    positionMap[p.uid] = p;
+                }});
+            }}
+
+            function draw() {{
+                // Clear canvas with white background
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw subtle background effects
+                drawNebulaClouds();
+                drawBackgroundStars();
+
+                // Draw connection lines first (so they appear behind nodes)
+                if (selectedParticipant) {{
+                    drawConnections(selectedParticipant);
+                }}
+
+                // Draw all participants as radar glyphs
+                participants.forEach(p => {{
+                    drawRadarGlyph(p);
                 }});
             }}
 
@@ -500,7 +538,7 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                     const alpha = 0.3 + Math.sin(star.twinkle + animationFrame * star.speed) * 0.3;
                     ctx.beginPath();
                     ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(0, 0, 0, ' + alpha + ')';
+                    ctx.fillStyle = 'rgba(180, 180, 180, ' + alpha + ')';
                     ctx.fill();
                 }});
             }}
@@ -643,122 +681,13 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
                 ctx.setLineDash([]);
             }}
 
-            function updatePositions() {{
-                time += 0.02; // Slow down the animation
-                positionMap = {{}};
-
-                participants.forEach(p => {{
-                    // Store base positions if not already stored
-                    if (p.baseX === undefined || p.baseY === undefined) {{
-                        p.baseX = p.x;
-                        p.baseY = p.y;
-                    }}
-
-                    // Calculate new floating positions using sine/cosine for natural movement
-                    p.currentX = p.baseX + Math.sin(time * p.speedX + p.phase) * p.moveRadius;
-                    p.currentY = p.baseY + Math.cos(time * p.speedY + p.phaseY) * p.moveRadius;
-
-                    positionMap[p.uid] = p;
-                }});
+            function getDistance(x, y, p) {{
+                const px = p.currentX || p.baseX || p.x;
+                const py = p.currentY || p.baseY || p.y;
+                const dx = x - px;
+                const dy = y - py;
+                return Math.sqrt(dx * dx + dy * dy);
             }}
-
-            function draw() {{
-                // Clear canvas with white background
-                ctx.fillStyle = '#FFFFFF';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Draw subtle background effects
-                drawNebulaClouds();
-                drawBackgroundStars();
-
-                // Draw connection lines first (so they appear behind nodes)
-                if (selectedParticipant) {{
-                    drawConnections(selectedParticipant);
-                }}
-
-                // Draw all participants as radar glyphs
-                participants.forEach(p => {{
-                    drawRadarGlyph(p);
-                }});
-            }}
-
-            function findParticipantAt(x, y) {{
-                for (let i = participants.length - 1; i >= 0; i--) {{
-                    const p = participants[i];
-                    const px = p.currentX || p.baseX || p.x;
-                    const py = p.currentY || p.baseY || p.y;
-                    const dist = Math.sqrt((px - x) ** 2 + (py - y) ** 2);
-                    if (dist < 15) return p;
-                }}
-                return null;
-            }}
-
-            function updateInfoPanel() {{
-                if (selectedParticipant) {{
-                    const p = selectedParticipant;
-                    document.getElementById('selectedName').textContent =
-                        p.uid + ' (' + (p.gender === 1 ? 'Male' : 'Female') + ', Age: ' + (p.age || 'N/A') + ')';
-                    document.getElementById('matchCount').textContent = p.matches.length;
-                    document.getElementById('yesCount').textContent = p.said_yes.length;
-                    document.getElementById('receivedCount').textContent = p.received_yes.length;
-                    infoPanel.style.display = 'block';
-                    hint.style.display = 'none';
-                }} else {{
-                    infoPanel.style.display = 'none';
-                    hint.style.display = 'block';
-                }}
-            }}
-
-            function clearSelection() {{
-                selectedParticipant = null;
-                updateInfoPanel();
-            }}
-
-            canvas.addEventListener('mousemove', (e) => {{
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                const p = findParticipantAt(x, y);
-                hoveredParticipant = p;
-                canvas.style.cursor = p ? 'pointer' : 'default';
-
-                if (p) {{
-                    const dimLabels = ['Attr', 'Sinc', 'Intel', 'Fun', 'Amb'];
-                    let html = '<b>' + p.uid + '</b><br>';
-                    html += (p.gender === 1 ? 'Male' : 'Female') + ', Age: ' + (p.age || 'N/A') + '<br><br>';
-                    html += '<div style="font-size: 10px; color: #666666;">';
-                    p.dims.forEach((d, i) => {{
-                        html += dimLabels[i] + ': ' + (d * 100).toFixed(0) + '%<br>';
-                    }});
-                    html += '</div>';
-                    tooltip.innerHTML = html;
-                    tooltip.style.left = (e.clientX - rect.left + 15) + 'px';
-                    tooltip.style.top = (e.clientY - rect.top + 15) + 'px';
-                    tooltip.style.opacity = 1;
-                }} else {{
-                    tooltip.style.opacity = 0;
-                }}
-            }});
-
-            canvas.addEventListener('click', (e) => {{
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-
-                const p = findParticipantAt(x, y);
-                if (p) {{
-                    selectedParticipant = (selectedParticipant === p) ? null : p;
-                }} else {{
-                    selectedParticipant = null;
-                }}
-                updateInfoPanel();
-            }});
-
-            canvas.addEventListener('mouseleave', () => {{
-                hoveredParticipant = null;
-                tooltip.style.opacity = 0;
-            }});
 
             // Initial setup
             resizeCanvas();
@@ -775,10 +704,113 @@ def create_cosmic_nebula_html(df, match_edges, yes_edges):
             // Start animation
             animate();
 
+            // Event listeners
+            canvas.addEventListener('mousemove', (e) => {{
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Find hovered participant
+                hoveredParticipant = null;
+                for (let i = participants.length - 1; i >= 0; i--) {{
+                    const p = participants[i];
+                    if (getDistance(x, y, p) < 15) {{
+                        hoveredParticipant = p;
+                        break;
+                    }}
+                }}
+
+                // Update tooltip with characteristics
+                if (hoveredParticipant) {{
+                    const px = hoveredParticipant.currentX || hoveredParticipant.baseX || hoveredParticipant.x;
+                    const py = hoveredParticipant.currentY || hoveredParticipant.baseY || hoveredParticipant.y;
+                    const dimLabels = ['Attractive', 'Sincere', 'Intelligent', 'Fun', 'Ambitious'];
+                    let dimsHtml = '';
+                    hoveredParticipant.dims.forEach((d, i) => {{
+                        const pct = Math.round(d * 100);
+                        dimsHtml += '<div style="display:flex;align-items:center;margin:2px 0;">' +
+                            '<span style="width:70px;font-size:10px;">' + dimLabels[i] + ':</span>' +
+                            '<div style="flex:1;height:6px;background:#eee;border-radius:3px;margin-left:5px;">' +
+                            '<div style="width:' + pct + '%;height:100%;background:#5f89d1;border-radius:3px;"></div>' +
+                            '</div>' +
+                            '<span style="width:30px;text-align:right;font-size:10px;">' + pct + '%</span>' +
+                            '</div>';
+                    }});
+                    tooltip.style.opacity = '1';
+                    tooltip.style.left = (px + 20) + 'px';
+                    tooltip.style.top = (py - 60) + 'px';
+                    tooltip.innerHTML = '<div style="font-weight:bold;margin-bottom:5px;">' + hoveredParticipant.uid + '</div>' +
+                        '<div style="font-size:11px;color:#666;margin-bottom:8px;">' +
+                        (hoveredParticipant.gender === 1 ? 'Male' : 'Female') + ', Age: ' + (hoveredParticipant.age || 'N/A') +
+                        '</div>' +
+                        '<div style="border-top:1px solid #eee;padding-top:5px;">' + dimsHtml + '</div>';
+                }} else {{
+                    tooltip.style.opacity = '0';
+                }}
+            }});
+
+            canvas.addEventListener('click', (e) => {{
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Find clicked participant
+                let clickedParticipant = null;
+                for (let i = participants.length - 1; i >= 0; i--) {{
+                    const p = participants[i];
+                    if (getDistance(x, y, p) < 15) {{
+                        clickedParticipant = p;
+                        break;
+                    }}
+                }}
+
+                if (clickedParticipant) {{
+                    selectedParticipant = clickedParticipant;
+                    hint.style.display = 'none';
+                    infoPanel.style.display = 'block';
+
+                    // Update info panel
+                    document.getElementById('selectedName').textContent =
+                        selectedParticipant.uid + ' (' +
+                        (selectedParticipant.gender === 1 ? 'Male' : 'Female') +
+                        ', Age: ' + (selectedParticipant.age || 'N/A') + ')';
+
+                    // Build characteristics display
+                    const dimLabels = ['Attractive', 'Sincere', 'Intelligent', 'Fun', 'Ambitious'];
+                    const colors = ['#e63b55', '#5f89d1', '#104a5b', '#f2dada', '#476d9e'];
+                    let charsHtml = '<div style="font-size:11px;color:#666;margin-bottom:8px;">Self-Perception:</div>';
+                    selectedParticipant.dims.forEach((d, i) => {{
+                        const pct = Math.round(d * 100);
+                        charsHtml += '<div style="display:flex;align-items:center;margin:4px 0;">' +
+                            '<span style="width:75px;font-size:11px;">' + dimLabels[i] + '</span>' +
+                            '<div style="flex:1;height:8px;background:#eee;border-radius:4px;margin:0 8px;">' +
+                            '<div style="width:' + pct + '%;height:100%;background:' + colors[i] + ';border-radius:4px;"></div>' +
+                            '</div>' +
+                            '<span style="width:35px;text-align:right;font-size:11px;font-weight:bold;">' + pct + '%</span>' +
+                            '</div>';
+                    }});
+                    document.getElementById('profileChars').innerHTML = charsHtml;
+
+                    document.getElementById('matchCount').textContent = Math.ceil(selectedParticipant.matches.length / 2);
+                    document.getElementById('yesCount').textContent = selectedParticipant.said_yes.length;
+                    document.getElementById('receivedCount').textContent = selectedParticipant.received_yes.length;
+                }} else {{
+                    selectedParticipant = null;
+                    hint.style.display = 'block';
+                    infoPanel.style.display = 'none';
+                }}
+            }});
+
             window.addEventListener('resize', () => {{
                 resizeCanvas();
                 generateStars();
             }});
+
+            function clearSelection() {{
+                selectedParticipant = null;
+                hint.style.display = 'block';
+                infoPanel.style.display = 'none';
+            }}
         </script>
     </body>
     </html>

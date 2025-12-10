@@ -20,7 +20,11 @@
       "Bash(C:UsersHXR15547301099Miniconda3python.exe -c \"\nimport pandas as pd\ndf = pd.read_csv(''data/Speed Dating Data.csv'', encoding=''latin-1'')\nprint(''First 15 rows of key columns:'')\nprint(df[[''iid'', ''pid'', ''gender'', ''wave'', ''match'', ''dec'', ''dec_o'']].head(15).to_string())\nprint(''\\nTotal rows:'', len(df))\n# Check unique pairs\ndf_clean = df.dropna(subset=[''iid'', ''pid''])\ndf_clean[''pair_key''] = df_clean.apply(lambda r: tuple(sorted([int(r[''iid'']), int(r[''pid''])])), axis=1)\nprint(''Unique unordered pairs:'', df_clean[''pair_key''].nunique())\nprint(''Unique ordered pairs:'', len(df_clean.groupby([''iid'', ''pid''])))\n# Check if each pair has 2 records\npair_counts = df_clean.groupby(''pair_key'').size()\nprint(''\\nPair record distribution:'')\nprint(pair_counts.value_counts().to_string())\n# Check matches\nprint(''\\nMatch analysis:'')\ndf_clean_match = df_clean[df_clean[''match'']==1]\nprint(''Total match=1 records:'', len(df_clean_match))\nprint(''Unique match pairs:'', df_clean_match[''pair_key''].nunique())\n\")",
       "Bash(D:D1Python3912python.exe -c \"import pandas; print(''pandas ok'')\")",
       "Bash(python -c \"import pandas; print(''pandas ok'')\")",
-      "Bash(pip3 list)"
+      "Bash(pip3 list)",
+      "Bash(python -c \"\nimport ast\ntry:\n    with open(''pages/1_Match_Landscape.py'', ''r'', encoding=''utf-8'') as f:\n        content = f.read()\n    ast.parse(content)\n    print(''Syntax OK'')\nexcept SyntaxError as e:\n    print(f''Syntax Error: {e}'')\n\")",
+      "Bash(python -c \"\nimport ast\ntry:\n    with open(''pages/1_Match_Landscape.py'', ''r'', encoding=''utf-8'') as f:\n        content = f.read()\n    ast.parse(content)\n    print(''Syntax OK'')\nexcept SyntaxError as e:\n    print(f''Syntax Error at line {e.lineno}: {e.msg}'')\n    print(f''Text: {e.text}'')\n\")",
+      "Bash(python -c \"\nimport ast\ntry:\n    with open(''pages/1_Match_Landscape.py'', ''r'', encoding=''utf-8'') as f:\n        content = f.read()\n    ast.parse(content)\n    print(''Syntax OK'')\nexcept SyntaxError as e:\n    print(f''Syntax Error at line {e.lineno}: {e.msg}'')\n\")",
+      "Bash(python -c \"import pandas as pd; df = pd.read_csv(''data/Speed Dating Data.csv'', encoding=''latin-1''); print(''Columns:'', list(df.columns)); print(''Shape:'', df.shape)\")"
     ]
   }
 }
