@@ -913,6 +913,13 @@ you_yes_they_no = len(df_filtered[(df_filtered['dec'] == 1) & (df_filtered['dec_
 you_no_they_yes = len(df_filtered[(df_filtered['dec'] == 0) & (df_filtered['dec_o'] == 1)])
 both_no = len(df_filtered[(df_filtered['dec'] == 0) & (df_filtered['dec_o'] == 0)])
 
+# Fix the issue: Since each interaction is recorded twice (once for each participant),
+# we need to divide the counts by 2 to get actual unique interaction counts
+both_yes = both_yes // 2
+you_yes_they_no = you_yes_they_no // 2
+you_no_they_yes = you_no_they_yes // 2
+both_no = both_no // 2
+
 # ==================== Header ====================
 st.markdown(f"""
 <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #eeeeee;">
@@ -1034,7 +1041,7 @@ import streamlit.components.v1 as components
 nebula_html = create_cosmic_nebula_html(df_nebula, match_edges_nebula, yes_edges_nebula)
 
 if nebula_html:
-    components.html(nebula_html, height=520, scrolling=False)
+    components.html(nebula_html, height=380, scrolling=False)
 else:
     st.warning("Unable to create nebula visualization. Check if personality data is available.")
 

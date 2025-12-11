@@ -24,7 +24,9 @@
       "Bash(python -c \"\nimport ast\ntry:\n    with open(''pages/1_Match_Landscape.py'', ''r'', encoding=''utf-8'') as f:\n        content = f.read()\n    ast.parse(content)\n    print(''Syntax OK'')\nexcept SyntaxError as e:\n    print(f''Syntax Error: {e}'')\n\")",
       "Bash(python -c \"\nimport ast\ntry:\n    with open(''pages/1_Match_Landscape.py'', ''r'', encoding=''utf-8'') as f:\n        content = f.read()\n    ast.parse(content)\n    print(''Syntax OK'')\nexcept SyntaxError as e:\n    print(f''Syntax Error at line {e.lineno}: {e.msg}'')\n    print(f''Text: {e.text}'')\n\")",
       "Bash(python -c \"\nimport ast\ntry:\n    with open(''pages/1_Match_Landscape.py'', ''r'', encoding=''utf-8'') as f:\n        content = f.read()\n    ast.parse(content)\n    print(''Syntax OK'')\nexcept SyntaxError as e:\n    print(f''Syntax Error at line {e.lineno}: {e.msg}'')\n\")",
-      "Bash(python -c \"import pandas as pd; df = pd.read_csv(''data/Speed Dating Data.csv'', encoding=''latin-1''); print(''Columns:'', list(df.columns)); print(''Shape:'', df.shape)\")"
+      "Bash(python -c \"import pandas as pd; df = pd.read_csv(''data/Speed Dating Data.csv'', encoding=''latin-1''); print(''Columns:'', list(df.columns)); print(''Shape:'', df.shape)\")",
+      "Bash(python -m py_compile pages/0_Overview_Dashboard.py)",
+      "Bash(python -m py_compile:*)"
     ]
   }
 }

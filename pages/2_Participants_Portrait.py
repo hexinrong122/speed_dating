@@ -567,31 +567,6 @@ st.plotly_chart(fig, use_container_width=True, key="main_scatter")
 # Display filtered count
 st.caption(f"Showing {len(filtered_df)} participants after filters applied")
 
-# ==================== Selection Stats ====================
-st.markdown("---")
-st.subheader("📈 Selection Stats")
-
-if len(filtered_df) > 0:
-    stats = create_aggregate_stats(filtered_df, CLUSTER_ARCHETYPES)
-    if stats:
-        stat_col1, stat_col2, stat_col3 = st.columns(3)
-        with stat_col1:
-            st.metric("Selected Count", stats['count'])
-        with stat_col2:
-            st.metric("Avg Age", f"{stats['avg_age']:.1f}")
-        with stat_col3:
-            st.metric("Male %", f"{stats['male_pct']:.1f}%")
-
-        # Cluster distribution
-        st.markdown("**Cluster Distribution:**")
-        dist_cols = st.columns(len(stats['cluster_dist']))
-        for i, (cluster_id, count) in enumerate(sorted(stats['cluster_dist'].items())):
-            if pd.notna(cluster_id):
-                arch = CLUSTER_ARCHETYPES.get(int(cluster_id), {})
-                pct = count / stats['count'] * 100
-                with dist_cols[i]:
-                    st.markdown(f"**{arch.get('code', '?')}:** {count} ({pct:.1f}%)")
-
 # ==================== Visual Encoding Legend ====================
 st.markdown("---")
 st.subheader("📖 Visual Encoding Guide")
