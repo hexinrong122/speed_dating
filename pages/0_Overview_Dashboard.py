@@ -139,25 +139,24 @@ def perform_clustering(df, n_clusters=5):
     return full_labels.values
 
 # ==================== Visualization Functions ====================
-def create_sankey(both_yes, you_yes_they_no, you_no_they_yes, both_no):
-    both_yes_corrected = both_yes // 2
+def create_sankey(both_yes, male_yes_female_no, female_yes_male_no, both_no):
     fig = go.Figure(go.Sankey(
         arrangement='snap',
         textfont=dict(color='#333333', size=10, family='Arial'),
         node=dict(
             pad=15, thickness=20,
             line=dict(color='#666666', width=1),
-            label=['All Interactions', 'You Say Yes', 'You Say No',
-                   'Mutual Match', 'You Yes, They No', 'They Yes, You No', 'Both No'],
-            color=['#f2dada', '#f2dada', '#cccccc', '#e63b55', '#f2dada', '#999999', '#666666'],
+            label=['All Interactions', 'Male Yes', 'Male No',
+                   'Mutual Match', 'M Yes, F No', 'F Yes, M No', 'Both No'],
+            color=['#f2dada', '#5f89d1', '#cccccc', '#e63b55', '#5f89d1', '#f2dada', '#666666'],
         ),
         link=dict(
             source=[0, 0, 1, 1, 2, 2],
             target=[1, 2, 3, 4, 5, 6],
-            value=[both_yes_corrected + you_yes_they_no, you_no_they_yes + both_no,
-                   both_yes_corrected, you_yes_they_no, you_no_they_yes, both_no],
-            color=['rgba(242,218,218,0.6)', 'rgba(204,204,204,0.5)', 'rgba(230,59,85,0.6)',
-                   'rgba(242,218,218,0.5)', 'rgba(153,153,153,0.5)', 'rgba(102,102,102,0.5)']
+            value=[both_yes + male_yes_female_no, female_yes_male_no + both_no,
+                   both_yes, male_yes_female_no, female_yes_male_no, both_no],
+            color=['rgba(95,137,209,0.5)', 'rgba(204,204,204,0.5)', 'rgba(230,59,85,0.6)',
+                   'rgba(95,137,209,0.4)', 'rgba(242,218,218,0.5)', 'rgba(102,102,102,0.5)']
         )
     ))
     fig.update_layout(
@@ -534,42 +533,46 @@ col1, col2, col3 = st.columns([1.2, 1.3, 1.5])
 # Left: Sankey + Breakdown
 with col1:
     st.markdown('<p class="section-title">Decision Flow</p>', unsafe_allow_html=True)
-    fig_sankey = create_sankey(both_yes, you_yes_they_no, you_no_they_yes, both_no)
+    fig_sankey = create_sankey(both_yes, male_yes_female_no, female_yes_male_no, both_no)
     st.plotly_chart(fig_sankey, use_container_width=True, config={'displayModeBar': False})
 
-    # Breakdown bars
+    # Breakdown bars with percentages
     st.markdown(f"""
     <div style="background:#fafafa;padding:10px;border-radius:6px;font-size:11px;">
         <div style="margin-bottom:8px;">
-            <span style="color:#000;font-weight:bold;">{both_yes//2:,}</span> Mutual Match
+            <span style="color:#000;font-weight:bold;">{both_yes/total_raw*100:.1f}%</span> Mutual Match
             <div style="background:#ddd;border-radius:3px;height:6px;margin-top:3px;">
                 <div style="background:#000;width:{both_yes/total_raw*100:.1f}%;height:100%;border-radius:3px;"></div>
             </div>
+            <div style="color:#666;font-size:10px;margin-top:2px;">{both_yes//2:,} pairs</div>
         </div>
         <div style="margin-bottom:8px;">
-            <span style="color:{MEDIUM_PINK};font-weight:bold;">{you_yes_they_no:,}</span> You Yes, They No
+            <span style="color:{MEDIUM_PINK};font-weight:bold;">{male_yes_female_no/total_raw*100:.1f}%</span> You Yes, They No
             <div style="background:#ddd;border-radius:3px;height:6px;margin-top:3px;">
-                <div style="background:{MEDIUM_PINK};width:{you_yes_they_no/total_raw*100:.1f}%;height:100%;border-radius:3px;"></div>
+                <div style="background:{MEDIUM_PINK};width:{male_yes_female_no/total_raw*100:.1f}%;height:100%;border-radius:3px;"></div>
             </div>
+            <div style="color:#666;font-size:10px;margin-top:2px;">{male_yes_female_no:,} pairs</div>
         </div>
         <div style="margin-bottom:8px;">
-            <span style="color:{MALE_COLOR};font-weight:bold;">{you_no_they_yes:,}</span> They Yes, You No
+            <span style="color:{MALE_COLOR};font-weight:bold;">{female_yes_male_no/total_raw*100:.1f}%</span> They Yes, You No
             <div style="background:#ddd;border-radius:3px;height:6px;margin-top:3px;">
-                <div style="background:{MALE_COLOR};width:{you_no_they_yes/total_raw*100:.1f}%;height:100%;border-radius:3px;"></div>
+                <div style="background:{MALE_COLOR};width:{female_yes_male_no/total_raw*100:.1f}%;height:100%;border-radius:3px;"></div>
             </div>
+            <div style="color:#666;font-size:10px;margin-top:2px;">{female_yes_male_no:,} pairs</div>
         </div>
         <div>
-            <span style="color:{GRID_COLOR};font-weight:bold;">{both_no:,}</span> Both No
+            <span style="color:{GRID_COLOR};font-weight:bold;">{both_no/total_raw*100:.1f}%</span> Both No
             <div style="background:#ddd;border-radius:3px;height:6px;margin-top:3px;">
                 <div style="background:{GRID_COLOR};width:{both_no/total_raw*100:.1f}%;height:100%;border-radius:3px;"></div>
             </div>
+            <div style="color:#666;font-size:10px;margin-top:2px;">{both_no:,} pairs</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 # Middle: Persona Projection
 with col2:
-    st.markdown('<p class="section-title">Persona Projection</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Portrait Clustering</p>', unsafe_allow_html=True)
     fig_persona = create_persona_scatter(persona_df)
     st.plotly_chart(fig_persona, use_container_width=True, config={'displayModeBar': False})
 
@@ -584,7 +587,7 @@ with col2:
 
 # Right: Cosmic Nebula
 with col3:
-    st.markdown('<p class="section-title">Cosmic Personality Nebula</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Dating Network Mapping</p>', unsafe_allow_html=True)
     nebula_html = create_cosmic_nebula_html(match_df, match_edges, yes_edges)
     if nebula_html:
         components.html(nebula_html, height=380, scrolling=False)
