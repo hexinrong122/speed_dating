@@ -1,7 +1,5 @@
-streamlit
-pandas
-plotly
-numpy
-scikit-learn
-umap-learn
-networkx
+streamlit==1.52.1
+pandas==2.3.3
+numpy==2.3.4
+plotly==6.5.0
+scikit-learn==1.7.2

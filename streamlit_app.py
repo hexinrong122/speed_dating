@@ -22,33 +22,12 @@ Navigate using the sidebar to explore different aspects of the data:
 
 ---
 
-#### 1️⃣ Match Landscape Overview
+#### 1️⃣ Match  Overview Dashboard
 **Understanding the macro landscape of speed dating outcomes**
 
-- Global match rate gauges (mutual match, dec, dec_o)
-- Gender-based Yes rate comparison
-- Decision breakdown (mutual match, one-sided, both no)
-- Interactive wave filtering
-
----
-
-#### 2️⃣ Participants Portrait Map
-**Who are the speed dating participants?**
-
-- Dimensionality reduction (UMAP/PCA) visualization
-- KMeans clustering for participant segmentation
-- Preference radar charts by cluster
-- Demographic analysis (age, gender, dating frequency)
-- Interactive color/size encoding options
-
----
-
-### 🎯 Key Questions Answered
-
-1. **How rare is a mutual match?** → See Match Landscape
-2. **Do men and women have different Yes rates?** → See Match Landscape
-3. **What types of people participate in speed dating?** → See Participants Portrait
-4. **Are there distinct preference patterns among participants?** → See Participants Portrait
+- decision flow
+- portrait clustering
+- dating network
 
 ---
 
@@ -66,7 +45,7 @@ Each participant engaged in multiple 4-minute "speed dates" and indicated whethe
 
 ---
 
-👈 **Select a page from the sidebar to begin exploring!**
+👈 **Select the Overview Dashboard from the sidebar to begin exploring!**
 """)
 
 # ==================== Footer ====================

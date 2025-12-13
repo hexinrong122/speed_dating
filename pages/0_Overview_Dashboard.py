@@ -15,7 +15,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ==================== Style Constants (from Match_Landscape) ====================
+# ==================== Style Constants ====================
 BACKGROUND_COLOR = '#FFFFFF'
 CARD_BG = '#FFFFFF'
 MALE_COLOR = '#5f89d1'
@@ -570,7 +570,7 @@ with col1:
     </div>
     """, unsafe_allow_html=True)
 
-# Middle: Persona Projection
+# Middle: Portrait Clustering
 with col2:
     st.markdown('<p class="section-title">Portrait Clustering</p>', unsafe_allow_html=True)
     fig_persona = create_persona_scatter(persona_df)
@@ -585,7 +585,7 @@ with col2:
     cluster_html += '</div>'
     st.markdown(cluster_html, unsafe_allow_html=True)
 
-# Right: Cosmic Nebula
+# Right: Dating Network
 with col3:
     st.markdown('<p class="section-title">Dating Network Mapping</p>', unsafe_allow_html=True)
     nebula_html = create_cosmic_nebula_html(match_df, match_edges, yes_edges)
