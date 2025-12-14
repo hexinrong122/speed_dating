@@ -39,7 +39,7 @@ streamlit run streamlit_app.py
 The application will open in your default web browser. 
 
 To view the static HTML visualizations:
-- Open [Triangle Interaction Plot.html](file://d:\DesktopD\GKG\5024\speed_dating\Triangle%20Interaction%20Plot.html) directly in your web browser
+- Open `Triangle Interaction Plot.html` directly in your web browser
 - Open `Interaction Trajectory Map Attraction Over Time.html` directly in your web browser
 
 To run the Jupyter notebook:
